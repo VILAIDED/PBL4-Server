@@ -32,16 +32,18 @@ const signin = async (req,res) =>{
         const user = await User.findOne({
             "username" : req.body.username
         })
-        if(!user) res.status(401).json({
-            msg : "User not found"
+        if(!user) return res.status(401).json({
+            err : "user not found"
         })
         if(!(await bcrypt.compare(req.body.password,user.password))) return res.status(401).json({
             msg : "username or password is not valid"
         })
+        console.log("meow1")
         const token = await jwt.sign({
             user : user,   
         }, process.env.TOKEN_SECRET)
-        req.header('auth-token',token);
+        console.log("meow")
+        //req.header('auth-token',token);
         res.status(200).json(token);
     }catch(err){
         return res.status(501).json(err)
