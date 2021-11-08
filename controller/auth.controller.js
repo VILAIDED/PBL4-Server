@@ -2,8 +2,6 @@ const User = require("../model/user")
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-
-
 const register = async (req,res)=>{
     try{
         const userValid  = await User.findOne({ "email" : req.body.email})
@@ -38,11 +36,10 @@ const signin = async (req,res) =>{
         if(!(await bcrypt.compare(req.body.password,user.password))) return res.status(401).json({
             msg : "username or password is not valid"
         })
-        console.log("meow1")
         const token = await jwt.sign({
             user : user,   
-        }, process.env.TOKEN_SECRET)
-        console.log("meow")
+            }, process.env.TOKEN_SECRET)
+            console.log("meow")
         //req.header('auth-token',token);
         res.status(200).json(token);
     }catch(err){
@@ -52,6 +49,7 @@ const signin = async (req,res) =>{
 
 const verifyToken = (req,res,next)=>{
     const token = req.header('auth-token')
+    
     if(!token){
         return res.status(403).json({
             msg : "token is not exist"
@@ -59,9 +57,8 @@ const verifyToken = (req,res,next)=>{
     }
     try{
         const decode  = jwt.verify(token,process.env.TOKEN_SECRET)
-        
+        console.log(token)
         req.body.userId = decode.user._id
-        console.log(decode.user)
     }catch(err){
         return res.status(501).json({
             msg : err

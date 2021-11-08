@@ -5,6 +5,6 @@ const {verifyToken} = require('../controller/auth.controller')
 
 router.route('/create').post(verifyToken,createRoom)
 router.route('/roombytype/:type').get(getRoomByType)
-router.route('/allroom').get(getAllRoom);
+router.route('/').get(getAllRoom);
 
 module.exports = router

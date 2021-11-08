@@ -2,20 +2,22 @@ const Room = require('../model/room')
 
 const createRoom = async (req,res)=>{
     const {topic,roomType,speaker} = req.body
-
-    if(!topic || !roomTYpe){
+    if(!topic || !roomType){
         return res.status(401).json({
             msg : "All field are required"
         })
     }
     try{
-    const room = await Room.crete({
+    const room = new Room({
         topic : topic,
         roomType : roomType,
+        status : "On",
         speakers : speaker,
-        ownerId : req.user.user_id
+        ownerId : req.body.userId
     })
-    return res.status(200).json(room);
+    const saved = await room.save();
+    console.log("hee")
+    return res.status(200).json(saved);
     }catch(err){
         res.status(500).json({msg : err})
     }
@@ -23,10 +25,12 @@ const createRoom = async (req,res)=>{
 const getAllRoom = async (req,res) => {
     const type = req.params.type;
     try{
-    const rooms = await RoomModel.find({ status: "open" })
-        .populate('speakers')
+    const rooms = await Room.find({ status: "On" })
+        // .populate('speakers')
         .populate('ownerId')
-        .exec();
+        //.populate('speakers')
+        .exec()
+    console.log('hee')
     return res.status(200).json({room : rooms})
     }catch(err){
         return res.status(500).json({

@@ -21,7 +21,7 @@ const roomSchema = new mongoose.Schema({
         type : String,
         default : "open"
     },
-    speaker : {
+    speakers : {
         type : [
             {
                 type : mongoose.Schema.Types.ObjectId,
