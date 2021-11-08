@@ -3,7 +3,7 @@ const app = express()
 require('dotenv').config()
 const http = require('http')
 const server = http.createServer(app)
-const authRoute = require('./routes/auth')
+const authRoute = require('./routes/auth.route')
 const roomRoute = require('./routes/room.route')
 const mongoose = require('mongoose')
 const io = require("socket.io")(server,
@@ -28,7 +28,7 @@ io.on('connection',socket=>{
             say : []
         }
         users[roomId] = room
-        io.to(socket.id).emit("admin role"); 
+       
     })
     socket.on('get room',()=>{
         const allRoom = users
@@ -45,7 +45,7 @@ io.on('connection',socket=>{
                 say : []
             }
             users[roomId] = room;
-            io.to(socket.id).emit("admin role"); 
+            io.to(socket.id).emit("set role","admin"); 
         }
         socketToRoom[socket.id] = roomId
         const userInThisRoom = { admin : users[roomId].admin,
@@ -64,14 +64,14 @@ io.on('connection',socket=>{
            if(!users[roomId].speaker.includes(userId)){
                console.log("role change")
                users[roomId].speaker.push(userId);
-               io.to(userId).emit('role changed','speaker');
+               io.to(userId).emit('set role','speaker');
                console.log(users[roomId])
            } 
         }else if (payload.role == 'say'){
             const userId = payload.userId;
             if(!users[roomId].say.includes(userId)){
                users[roomId].say.push(userId);
-               io.to(userId).emit('role changed','say');
+               io.to(userId).emit('set role','say');
             }
         }
         

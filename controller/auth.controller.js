@@ -76,7 +76,8 @@ const logined = async(req,res)=>{
         const user = await User.findOne({
             _id : userId
         })
-        console.log('meow')
+        user.password = undefined
+        console.log("user",user)
         return res.status(200).json(user)
     }catch(err){
         res.status(500).json({

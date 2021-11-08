@@ -20,6 +20,20 @@ const createRoom = async (req,res)=>{
         res.status(500).json({msg : err})
     }
 }
+const getAllRoom = async (req,res) => {
+    const type = req.params.type;
+    try{
+    const rooms = await RoomModel.find({ status: "open" })
+        .populate('speakers')
+        .populate('ownerId')
+        .exec();
+    return res.status(200).json({room : rooms})
+    }catch(err){
+        return res.status(500).json({
+            msg : err
+        })
+    }
+}
 const getRoomByType = async (req,res) => {
     const type = req.params.type;
     try{
@@ -36,5 +50,6 @@ const getRoomByType = async (req,res) => {
 }
 module.exports = {
     createRoom,
-    getRoomByType
+    getRoomByType,
+    getAllRoom
 }

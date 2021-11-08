@@ -5,6 +5,10 @@ const roomSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
+    description : {
+        type : String,
+        required : false
+    },
     roomType :{
         type : String,
         required : true
@@ -12,6 +16,10 @@ const roomSchema = new mongoose.Schema({
     ownerId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User'
+    },
+    status:{
+        type : String,
+        default : "open"
     },
     speaker : {
         type : [
@@ -22,7 +30,6 @@ const roomSchema = new mongoose.Schema({
         ],
         required : false
     }
-    
 },
 {
     timestamps : true
