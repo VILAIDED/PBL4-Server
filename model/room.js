@@ -21,6 +21,13 @@ const roomSchema = new mongoose.Schema({
         type : String,
         default : "open"
     },
+    users : {
+        type : [{
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "User"
+        }
+        ]
+    },
     speakers : {
         type : [
             {

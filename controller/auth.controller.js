@@ -66,7 +66,6 @@ const verifyToken = (req,res,next)=>{
     }
     return next()
 }
-
 const logined = async(req,res)=>{
     try{
         const userId = req.body.userId
