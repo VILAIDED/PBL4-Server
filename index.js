@@ -60,7 +60,6 @@ io.on('connection',socket=>{
         const room = users[data.roomId];
         const userInThisRoom = {    
             users : room.users}
-
         io.to(socket.id).emit("all users",userInThisRoom);
     })
 
@@ -79,8 +78,8 @@ io.on('connection',socket=>{
                     io.to(userId).emit('set role',payload.role);
                     room.forEach(user => {
                         console.log("send")
-                        // socket.to(user.socketId).emit("user out",{id : socket.id});
-                        io.to(user.socketId).emit("user out",room);
+                         socket.to(user.socketId).emit("user out",{id : socket.id});
+                       // io.to(user.socketId).emit("user out",room);
                     });
 
                 }
@@ -106,8 +105,8 @@ io.on('connection',socket=>{
             room = room.filter(user => user.socketId !== socket.id)
             users[roomId].users = room;
             room.forEach(user => {
-                // socket.to(user.socketId).emit("user out",{id : socket.id});
-                socket.to(user.socketId).emit("user out",room);
+                socket.to(user.socketId).emit("user out",{id : socket.id});
+                //socket.to(user.socketId).emit("user out",room);
             });
         }
         console.log(users)
