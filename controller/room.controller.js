@@ -16,7 +16,6 @@ const createRoom = async (req,res)=>{
         ownerId : req.body.userId
     })
     const saved = await room.save();
-    console.log("hee")
     return res.status(200).json(saved);
     }catch(err){
         res.status(500).json({msg : err})
@@ -66,7 +65,6 @@ const getAllRoom = async (req,res) => {
         .populate('speakers')
         .populate('users')
         .exec()
-    console.log("room",rooms)
     return res.status(200).json({room : rooms})
     }catch(err){
         return res.status(500).json({

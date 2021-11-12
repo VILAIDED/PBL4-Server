@@ -6,6 +6,8 @@ const server = http.createServer(app)
 const authRoute = require('./routes/auth.route')
 const roomRoute = require('./routes/room.route')
 const mongoose = require('mongoose')
+const cors = require('cors')
+app.use(cors())
 const io = require("socket.io")(server,
     {
         cors : {
@@ -20,64 +22,76 @@ const users = {}
 const socketToRoom = {}
 
 io.on('connection',socket=>{
-    socket.on('create room',roomId=>{
+    socket.on('create room',data=>{
         const room = {
-            admin : socket.id,
-            users : [socket.id],
-            speaker : [],
-            say : []
+        users : [{ socketId : socket.id
+                 ,id : data.user.userId,
+                  avatar : data.user.avatar,
+                  username : data.user.username,
+                  role : "admin"}]
         }
-        users[roomId] = room
+        users[data.roomId] = room
        
     })
     socket.on('get room',()=>{
         const allRoom = users
         io.to(socket.id).emit("get room",allRoom)
     })
-    socket.on('join room',roomId=>{
-        if(user[roomId]){
-            users[roomId]["users"].push(socket.id);
+    socket.on('join room',data=>{
+        console.log(data)
+        if(users[data.roomId]){
+            users[data.roomId]["users"].push({ socketId : socket.id
+                ,id : data.user.userId,
+                 avatar : data.user.avatar,
+                 username : data.user.username,
+                 role : "user"});
         }else{
             const room = {
-                admin : socket.id,
-                users : [socket.id],
-                speaker : [],
-                say : []
-            }
-            users[roomId] = room;
+                users : [{ socketId : socket.id
+                    ,id : data.user.userId,
+                     avatar : data.user.avatar,
+                     username : data.user.username,
+                     role : "admin"}]
+                }
+            users[data.roomId] = room;
             io.to(socket.id).emit("set role","admin"); 
         }
-        socketToRoom[socket.id] = roomId
-        const userInThisRoom = { admin : users[roomId].admin,
-            users : users[roomId].users.filter(id=>id !== socket.id)}
+        socketToRoom[socket.id] = data.roomId
+        const room = users[data.roomId];
+        const userInThisRoom = {    
+            users : room.users}
 
         io.to(socket.id).emit("all users",userInThisRoom);
-
-        
-
     })
+
 
     socket.on('change role',payload=>{
+        console.log("chage role")
         const roomId = payload.roomId
-        if(payload.role == 'speaker'){
-           const userId = payload.userId;
-           if(!users[roomId].speaker.includes(userId)){
-               console.log("role change")
-               users[roomId].speaker.push(userId);
-               io.to(userId).emit('set role','speaker');
-               console.log(users[roomId])
-           } 
-        }else if (payload.role == 'say'){
-            const userId = payload.userId;
-            if(!users[roomId].say.includes(userId)){
-               users[roomId].say.push(userId);
-               io.to(userId).emit('set role','say');
+        const userId = payload.userId;
+        const index = users[roomId]["users"].findIndex(user=> user.id == userId);
+        console.log("index",index);
+        if(index){
+                if(!(users[roomId]["users"][index].role == payload.role)){
+                    users[roomId]["users"][index].role = payload.role;
+                    console.log("user room",users[roomId])
+                    const room = users[roomId].users;
+                    io.to(userId).emit('set role',payload.role);
+                    room.forEach(user => {
+                        console.log("send")
+                        // socket.to(user.socketId).emit("user out",{id : socket.id});
+                        io.to(user.socketId).emit("user out",room);
+                    });
+
+                }
             }
-        }
-        
-    })
+        });
+     
+     
     socket.on('sending signal',payload=>{
-        io.to(payload.userToSignal).emit('user joined',{signal : payload.signal,callerID: payload.callerID})
+        console.log("payload",payload)
+        const caller = users[payload.roomId]["users"].find(user=> user.socketId == payload.callerId)
+        io.to(payload.userToSignal).emit('user joined',{signal : payload.signal,caller : caller})
     })
     
     socket.on('returning signal',payload =>{
@@ -89,13 +103,14 @@ io.on('connection',socket=>{
         if(users[roomId]){
         let room = users[roomId].users
         if(room){
-            room = room.filter(id => id !== socket.id)
+            room = room.filter(user => user.socketId !== socket.id)
             users[roomId].users = room;
-            room.forEach(userId => {
-                socket.to(userId).emit("user out",{id : socket.id});
+            room.forEach(user => {
+                // socket.to(user.socketId).emit("user out",{id : socket.id});
+                socket.to(user.socketId).emit("user out",room);
             });
-            
         }
+        console.log(users)
     } 
     })
 

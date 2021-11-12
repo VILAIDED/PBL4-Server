@@ -39,7 +39,7 @@ const signin = async (req,res) =>{
         const token = await jwt.sign({
             user : user,   
             }, process.env.TOKEN_SECRET)
-            console.log("meow")
+
         //req.header('auth-token',token);
         res.status(200).json(token);
     }catch(err){
@@ -57,7 +57,6 @@ const verifyToken = (req,res,next)=>{
     }
     try{
         const decode  = jwt.verify(token,process.env.TOKEN_SECRET)
-        console.log(token)
         req.body.userId = decode.user._id
     }catch(err){
         return res.status(501).json({
@@ -73,7 +72,7 @@ const logined = async(req,res)=>{
             _id : userId
         })
         user.password = undefined
-        console.log("user",user)
+       
         return res.status(200).json(user)
     }catch(err){
         res.status(500).json({
