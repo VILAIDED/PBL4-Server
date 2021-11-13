@@ -27,7 +27,7 @@ const setSpeaker = async (req,res)=>{
     try{
         const room = await Room.findOne({ _id : roomId})
         if(!room) return res.status(500).json({msg : "room is not exitst"})
-        if(!room.users.includes(userId)) return res.status(500).json({msg : "user not available in room"})
+       // if(!room.users.includes(userId)) return res.status(500).json({msg : "user not available in room"})
         if(room.speakers.includes(userId)) return res.status(500).json({msg : "user already a speaker"})
         room.speakers.push(userId);
         const updated = await room.save();
@@ -72,10 +72,27 @@ const getAllRoom = async (req,res) => {
         })
     }
 }
+const getRoomById = async (req,res) => {
+    console.log("get room")
+    const roomId = req.params.roomId;
+    console.log(roomId)
+    try{
+    const rooms = await Room.findOne({ _id : roomId})
+        .populate('speakers')
+        .populate('ownerId')
+        .exec();
+ 
+    return res.status(200).json({room : rooms})
+    }catch(err){
+        return res.status(500).json({
+            msg : err
+        })
+    }
+}
 const getRoomByType = async (req,res) => {
     const type = req.params.type;
     try{
-    const rooms = await RoomModel.find({ roomType: { $in: type } })
+    const rooms = await Room.find({ roomType: { $in: type } })
         .populate('speakers')
         .populate('users')
         .populate('ownerId')
@@ -92,5 +109,6 @@ module.exports = {
     getRoomByType,
     getAllRoom,
     setSpeaker,
-    addUserToRoom
+    addUserToRoom,
+    getRoomById
 }

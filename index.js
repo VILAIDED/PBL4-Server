@@ -65,25 +65,32 @@ io.on('connection',socket=>{
 
 
     socket.on('change role',payload=>{
-        console.log("chage role")
-        const roomId = payload.roomId
-        const userId = payload.userId;
-        const index = users[roomId]["users"].findIndex(user=> user.id == userId);
-        console.log("index",index);
-        if(index){
-                if(!(users[roomId]["users"][index].role == payload.role)){
-                    users[roomId]["users"][index].role = payload.role;
-                    console.log("user room",users[roomId])
-                    const room = users[roomId].users;
-                    io.to(userId).emit('set role',payload.role);
-                    room.forEach(user => {
-                        console.log("send")
-                         socket.to(user.socketId).emit("user out",{id : socket.id});
-                       // io.to(user.socketId).emit("user out",room);
-                    });
+        // console.log("chage role")
+    const roomId = payload.roomId
+        // const userId = payload.userId;
+        // const index = users[roomId]["users"].findIndex(user=> user.id == userId);
+        // console.log("index",index);
+        // if(index){
+        //         if(!(users[roomId]["users"][index].role == payload.role)){
+        //             users[roomId]["users"][index].role = payload.role;
+        //             console.log("user room",users[roomId])
+        //             const room = users[roomId].users;
+        //             io.to(userId).emit('set role',payload.role);
+        //             room.forEach(user => {
+        //                 console.log("send")
+        //                  socket.to(user.socketId).emit("user out",{id : socket.id});
+        //                // io.to(user.socketId).emit("user out",room);
+        //             });
 
-                }
-            }
+        //         }
+        //     }
+        const room = users[roomId].users;
+        //io.to(userId).emit('set role',payload.role);
+        console.log("user in room role",room)
+        room.forEach(user => {
+             io.to(user.socketId).emit("role change",{id : socket.id});
+           // io.to(user.socketId).emit("user out",room);
+        });
         });
      
      
