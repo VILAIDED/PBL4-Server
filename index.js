@@ -54,7 +54,6 @@ io.on('connection',socket=>{
                      role : "admin"}]
                 }
             users[data.roomId] = room;
-            io.to(socket.id).emit("set role","admin"); 
         }
         socketToRoom[socket.id] = data.roomId
         const room = users[data.roomId];
@@ -101,7 +100,7 @@ io.on('connection',socket=>{
     })
     
     socket.on('returning signal',payload =>{
-        io.to(payload.callerID).emit('receiving returned signal',{signal : payload.signal,id : socket.id})
+        io.to(payload.callerId).emit('receiving returned signal',{signal : payload.signal,id : socket.id})
     })
     socket.on('disconnect', ()=>{
        
