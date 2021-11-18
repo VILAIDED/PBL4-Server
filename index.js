@@ -87,7 +87,7 @@ io.on('connection',socket=>{
         //io.to(userId).emit('set role',payload.role);
         console.log("user in room role",room)
         room.forEach(user => {
-             io.to(user.socketId).emit("role change",{id : socket.id});
+             io.to(user.socketId).emit("role change",{id : payload.userId,role : payload.role});
            // io.to(user.socketId).emit("user out",room);
         });
         });
@@ -115,7 +115,6 @@ io.on('connection',socket=>{
                 //socket.to(user.socketId).emit("user out",room);
             });
         }
-        console.log(users)
     } 
     })
 
