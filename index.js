@@ -1,11 +1,13 @@
 const express = require('express')
 const app = express()
+require("./config/connectDB")
 require('dotenv').config()
 const http = require('http')
+const imageUpload = require('./middlewares/uploadImage')
 const server = http.createServer(app)
 const authRoute = require('./routes/auth.route')
 const roomRoute = require('./routes/room.route')
-const mongoose = require('mongoose')
+
 const cors = require('cors')
 app.use(cors())
 const io = require("socket.io")(server,
@@ -14,10 +16,7 @@ const io = require("socket.io")(server,
             origin : "*"
         }
     })
-mongoose.connect(process.env.MONGO_URL,(err,client)=>{
-        if(err) return console.error(err);
-        console.log("connected to mongoose")
-    })
+
 const users = {}
 const socketToRoom = {}
 
@@ -38,7 +37,7 @@ io.on('connection',socket=>{
         io.to(socket.id).emit("get room",allRoom)
     })
     socket.on('join room',data=>{
-        console.log(data)
+        console.log("new user",data)
         if(users[data.roomId]){
             users[data.roomId]["users"].push({ socketId : socket.id
                 ,id : data.user.userId,
@@ -59,42 +58,22 @@ io.on('connection',socket=>{
         const room = users[data.roomId];
         const userInThisRoom = {    
             users : room.users}
+        console.log("user in room",userInThisRoom)
         io.to(socket.id).emit("all users",userInThisRoom);
     })
 
 
     socket.on('change role',payload=>{
-        // console.log("chage role")
     const roomId = payload.roomId
-        // const userId = payload.userId;
-        // const index = users[roomId]["users"].findIndex(user=> user.id == userId);
-        // console.log("index",index);
-        // if(index){
-        //         if(!(users[roomId]["users"][index].role == payload.role)){
-        //             users[roomId]["users"][index].role = payload.role;
-        //             console.log("user room",users[roomId])
-        //             const room = users[roomId].users;
-        //             io.to(userId).emit('set role',payload.role);
-        //             room.forEach(user => {
-        //                 console.log("send")
-        //                  socket.to(user.socketId).emit("user out",{id : socket.id});
-        //                // io.to(user.socketId).emit("user out",room);
-        //             });
-
-        //         }
-        //     }
         const room = users[roomId].users;
-        //io.to(userId).emit('set role',payload.role);
         console.log("user in room role",room)
         room.forEach(user => {
              io.to(user.socketId).emit("role change",{id : payload.userId,role : payload.role});
-           // io.to(user.socketId).emit("user out",room);
         });
         });
      
      
     socket.on('sending signal',payload=>{
-        console.log("payload",payload)
         const caller = users[payload.roomId]["users"].find(user=> user.socketId == payload.callerId)
         io.to(payload.userToSignal).emit('user joined',{signal : payload.signal,caller : caller})
     })
@@ -110,6 +89,23 @@ io.on('connection',socket=>{
         if(room){
             room = room.filter(user => user.socketId !== socket.id)
             users[roomId].users = room;
+            console.log("user available",users)
+            room.forEach(user => {
+                socket.to(user.socketId).emit("user out",{id : socket.id});
+                //socket.to(user.socketId).emit("user out",room);
+            });
+        }
+    } 
+    })
+    socket.on('user out', ()=>{
+       
+        const roomId = socketToRoom[socket.id]
+        if(users[roomId]){
+        let room = users[roomId].users
+        if(room){
+            room = room.filter(user => user.socketId !== socket.id)
+            users[roomId].users = room;
+            console.log("user available",users)
             room.forEach(user => {
                 socket.to(user.socketId).emit("user out",{id : socket.id});
                 //socket.to(user.socketId).emit("user out",room);
@@ -123,6 +119,13 @@ io.on('connection',socket=>{
 
 
 app.use(express.json())
+app.use(express.static(__dirname+ "/public"));
+
+
+app.post('/',imageUpload.single('image'),(req,res)=>{
+    console.log("wu wu")
+    res.send(req.file.filename)
+})
 app.get('/',(req,res)=>{
     res.send("Hello world");
 })

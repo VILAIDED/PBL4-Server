@@ -56,6 +56,31 @@ const addUserToRoom = async (req,res)=>{
 
 
 }
+const closeRoom = async (req,res) =>{
+    const roomId = req.params.roomId;
+    try{
+        const room = await Room.findOne({_id : roomId});
+        if(!room) return res.status(500).json({msg : "room is not exist"});
+        room.status = "off";
+        const roomUpdated = await room.save();
+        return res.status(200).json({room : roomUpdated}); 
+    }catch(err){r
+        return res.status(500).json({msg : err})
+    }
+}
+const deleteRoom = async (req,res) =>{
+    const roomId  = req.params.roomId;
+    try{
+        await Room.deleteOne({_id : roomId});
+        return res.status(200).json({
+            msg : "delete successful"
+        })
+    }catch(err){
+        return res.status(500).json({
+            msg : err
+        })
+    }
+}
 const getAllRoom = async (req,res) => {
     const type = req.params.type;
     try{
@@ -110,5 +135,7 @@ module.exports = {
     getAllRoom,
     setSpeaker,
     addUserToRoom,
-    getRoomById
+    getRoomById,
+    closeRoom,
+    deleteRoom
 }

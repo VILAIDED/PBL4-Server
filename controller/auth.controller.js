@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 
 const register = async (req,res)=>{
     try{
-        const userValid  = await User.findOne({ "email" : req.body.email})
+        const userValid  = await User.findOne({ "username" : req.body.username})
         if(userValid) return res.status("401").json({
             msg : "email is already exist"
         })
@@ -49,7 +49,7 @@ const signin = async (req,res) =>{
 
 const verifyToken = (req,res,next)=>{
     const token = req.header('auth-token')
-    
+   
     if(!token){
         return res.status(403).json({
             msg : "token is not exist"
@@ -57,13 +57,30 @@ const verifyToken = (req,res,next)=>{
     }
     try{
         const decode  = jwt.verify(token,process.env.TOKEN_SECRET)
+       
         req.body.userId = decode.user._id
+        console.log("decode",req.body.userId)
     }catch(err){
         return res.status(501).json({
             msg : err
         })
     }
     return next()
+}
+const editProfile = async(req,res)=>{
+    const id = req.body.userId
+    const {username} = req.body;
+    try{
+        const user = await User.findOne({_id : id});
+        if(!user) return res.status(500).json({msg : "user not exist"})
+        user.username = username;
+        const userUpdated = await user.save();
+        return res.status(200).json({
+            user : userUpdated
+        })
+    }catch(err){
+
+    }
 }
 const logined = async(req,res)=>{
     try{
@@ -80,10 +97,52 @@ const logined = async(req,res)=>{
         })
     }
 }
+const userChangePassword = async (req,res)=>{
+    const userId = req.body.userId;
+    try{
+        const  user = await User.findOne({
+            _id : userId
+        })
+        if(!(await bcrypt.compare(req.body.password,user.password))) return res.status(401).json({
+            msg : "password is not corret"
+        })
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(req.body.newPassword,salt);
+        user.password = hashedPassword;
+        const userUpdated  =await user.save();
+        return res.status(200).json({userUpdated})
 
+
+    }catch(err){
+        return res.status(500).json({
+            err : err
+        })
+    }
+}
+const uploadImageProfile = async (req,res)=>{
+    const userId = req.body.userId;
+    console.log(userId)
+    try{
+    const user = await User.findOne({
+        _id : userId
+    })
+   
+    user.avatar = req.file.filename;
+    
+    const userUpdated = await user.save();
+    return res.status(200).json({userUpdated})
+    }catch(err){
+        return res.status(500).json({
+            err : err
+        })
+    }
+}
 module.exports = {
     verifyToken,
     register,
     signin,
-    logined
+    logined,
+    editProfile,
+    uploadImageProfile,
+    userChangePassword,
 }
