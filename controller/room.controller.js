@@ -1,7 +1,7 @@
 const Room = require('../model/room')
 
 const createRoom = async (req,res)=>{
-    const {topic,roomType,speaker} = req.body
+    const {topic,roomType,speaker,description} = req.body
     if(!topic || !roomType){
         return res.status(401).json({
             msg : "All field are required"
@@ -9,6 +9,7 @@ const createRoom = async (req,res)=>{
     }
     try{
     const room = new Room({
+        description : description,
         topic : topic,
         roomType : roomType,
         status : "On",
