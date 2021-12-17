@@ -21,6 +21,8 @@ const users = {}
 const socketToRoom = {}
 
 io.on('connection',socket=>{
+    
+    
     socket.on('create room',data=>{
         const room = {
         users : [{ socketId : socket.id
@@ -33,7 +35,9 @@ io.on('connection',socket=>{
        
     })
     socket.on('get room',()=>{
-        const allRoom = users
+        
+        const allRoom = Object.keys(users)
+        console.log("get room", allRoom)
         io.to(socket.id).emit("get room",allRoom)
     })
     socket.on('join room',data=>{
@@ -91,12 +95,15 @@ io.on('connection',socket=>{
         if(room){
             room = room.filter(user => user.socketId !== socket.id)
             users[roomId].users = room;
-            console.log("user available",users)
+            if(room.length > 0){
             room.forEach(user => {
                 socket.to(user.socketId).emit("user out",{id : socket.id});
                 //socket.to(user.socketId).emit("user out",room);
             });
+        }else{
+            delete users[roomId]
         }
+    }
     } 
     })
     socket.on('user out', ()=>{
@@ -107,11 +114,14 @@ io.on('connection',socket=>{
         if(room){
             room = room.filter(user => user.socketId !== socket.id)
             users[roomId].users = room;
-            console.log("user available",users)
+            if(room.length > 0) {
             room.forEach(user => {
                 socket.to(user.socketId).emit("user out",{id : socket.id});
                 //socket.to(user.socketId).emit("user out",room);
             });
+        }else{
+            delete users[roomId]
+        }
         }
     } 
     })
@@ -125,7 +135,6 @@ app.use(express.static(__dirname+ "/public"));
 
 
 app.post('/',imageUpload.single('image'),(req,res)=>{
-    console.log("wu wu")
     res.send(req.file.filename)
 })
 app.get('/',(req,res)=>{

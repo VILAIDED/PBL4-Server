@@ -1,19 +1,20 @@
 const Room = require('../model/room')
 
 const createRoom = async (req,res)=>{
-    const {topic,roomType,speaker,description} = req.body
+    const {topic,roomType,speakers,description} = req.body
     if(!topic || !roomType){
         return res.status(401).json({
             msg : "All field are required"
         })
     }
     try{
+    console.log("speaker",speakers)
     const room = new Room({
         description : description,
         topic : topic,
         roomType : roomType,
         status : "On",
-        speakers : speaker,
+        speakers : speakers,
         ownerId : req.body.userId
     })
     const saved = await room.save();

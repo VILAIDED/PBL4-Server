@@ -137,6 +137,27 @@ const uploadImageProfile = async (req,res)=>{
         })
     }
 }
+const getUserById = async (req,res)=>{
+    const userId = req.params.id;
+    try{
+        const  user = await User.findOne({
+            _id : userId
+        })
+        user.password = undefined;
+        return res.status(200).json(user);
+    }catch(err){
+        return res.status(500).json({msg : err})
+    }
+
+}
+const getAllUser = async (req,res)=>{
+    try{
+        const user = await User.find().select("-password");
+        return res.status(200).json(user);
+    }catch(err){
+        return res.status(500).json({msg : err});
+    }
+}
 module.exports = {
     verifyToken,
     register,
@@ -145,4 +166,6 @@ module.exports = {
     editProfile,
     uploadImageProfile,
     userChangePassword,
+    getUserById,
+    getAllUser
 }
