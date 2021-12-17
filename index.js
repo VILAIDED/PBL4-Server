@@ -70,6 +70,8 @@ io.on('connection',socket=>{
         room.forEach(user => {
              io.to(user.socketId).emit("role change",{id : payload.userId,role : payload.role});
         });
+        const user = room.find(u=> u.id == payload.userId);
+        io.to(user.socketId).emit("role changee");
         });
      
      
