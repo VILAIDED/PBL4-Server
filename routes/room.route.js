@@ -1,9 +1,10 @@
 const router = require('express').Router()
 const {createRoom,getRoomByType,getAllRoom,
     setSpeaker,addUserToRoom,closeRoom,
-    getRoomById,deleteRoom} = require('../controller/room.controller')
+    getRoomById,deleteRoom,getRoomList} = require('../controller/room.controller')
 const {verifyToken} = require('../controller/auth.controller')
 router.route('/create').post(verifyToken,createRoom)
+router.route('/room').post(getRoomList)
 router.route('/roombytype/:type').get(getRoomByType)
 router.route('/').get(getAllRoom);
 router.route('/speaker/:roomId').put(setSpeaker);

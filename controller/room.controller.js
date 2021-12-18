@@ -116,6 +116,23 @@ const getRoomById = async (req,res) => {
         })
     }
 }
+const getRoomList = async (req,res)=>{
+    const Ids = req.body.id;
+    console.log(req.body)
+    console.log(Ids)
+    try{
+        const rooms = await Room.find({
+            '_id' : {$in: 
+                Ids
+            }
+        }).populate('speakers')
+        .populate('ownerId')
+        .exec();
+        return res.status(200).json(rooms)
+    }catch(err){
+        return res.status(500).json({msg : err})
+    }
+}
 const getRoomByType = async (req,res) => {
     const type = req.params.type;
     try{
@@ -139,5 +156,6 @@ module.exports = {
     addUserToRoom,
     getRoomById,
     closeRoom,
-    deleteRoom
+    deleteRoom,
+    getRoomList
 }
