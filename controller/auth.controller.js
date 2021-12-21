@@ -69,11 +69,12 @@ const verifyToken = (req,res,next)=>{
 }
 const editProfile = async(req,res)=>{
     const id = req.body.userId
-    const {username} = req.body;
+    const {username,realname} = req.body;
     try{
         const user = await User.findOne({_id : id});
         if(!user) return res.status(500).json({msg : "user not exist"})
         user.username = username;
+        user.realname = realname;
         const userUpdated = await user.save();
         return res.status(200).json({
             user : userUpdated
