@@ -1,7 +1,9 @@
 const User = require("../model/user")
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs')
 const register = async (req,res)=>{
     try{
         const userValid  = await User.findOne({ "username" : req.body.username})
@@ -59,7 +61,6 @@ const verifyToken = (req,res,next)=>{
         const decode  = jwt.verify(token,process.env.TOKEN_SECRET)
        
         req.body.userId = decode.user._id
-        console.log("decode",req.body.userId)
     }catch(err){
         return res.status(501).json({
             msg : err
@@ -121,15 +122,24 @@ const userChangePassword = async (req,res)=>{
     }
 }
 const uploadImageProfile = async (req,res)=>{
+    const { filename: image } = req.file;
     const userId = req.body.userId;
     console.log(userId)
     try{
     const user = await User.findOne({
         _id : userId
     })
-   
-    user.avatar = req.file.filename;
+    const newPath = path.resolve(req.file.destination,"n"+image)
+
+    await sharp(req.file.path)
+    .jpeg({ quality: 50 })
+    .toFile(
+       newPath
+    )
+    fs.unlinkSync(req.file.path)
     
+    user.avatar = "n"+image;
+   
     const userUpdated = await user.save();
     return res.status(200).json({userUpdated})
     }catch(err){

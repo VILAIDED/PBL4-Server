@@ -129,9 +129,9 @@ io.on('connection',socket=>{
 
 })
 
-
-app.use(express.json())
 app.use(express.static(__dirname+ "/public"));
+app.use(express.json())
+
 
 
 app.post('/',imageUpload.single('image'),(req,res)=>{
